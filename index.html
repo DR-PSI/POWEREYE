@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerEye Pilot — Tinamics Co., Ltd.</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Sarabun', 'Share Tech Mono', monospace; background: #060a14; color: #c8d8e8; }
+.pe-wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.pe-header { background: #0a0e1a; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0; border-bottom: 2px solid #ffd700; }
+.pe-logo { font-family: monospace; font-size: 18px; color: #ffd700; letter-spacing: 2px; font-weight: bold; }
+.pe-logo span { font-size: 11px; color: #5a7a9a; display: block; letter-spacing: 1px; margin-top: 2px; }
+.pe-status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #5a7a9a; font-family: monospace; }
+.pe-dot { width: 8px; height: 8px; border-radius: 50%; background: #00ff9d; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.pe-nav { background: #0f1628; padding: 0 20px; display: flex; gap: 4px; border-bottom: 1px solid #1e3a5f; }
+.pe-tab { padding: 10px 16px; font-size: 11px; color: #5a7a9a; cursor: pointer; border-bottom: 2px solid transparent; font-family: monospace; letter-spacing: 1px; }
+.pe-tab.active { color: #ffd700; border-bottom-color: #ffd700; }
+.pe-body { background: #0a0e1a; padding: 16px 20px; border-radius: 0 0 12px 12px; min-height: 600px; }
+.metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.metric-card { background: #0f1628; border: 1px solid #1e3a5f; border-radius: 8px; padding: 12px 14px; }
+.metric-label { font-size: 10px; color: #5a7a9a; font-family: monospace; letter-spacing: 1px; margin-bottom: 6px; }
+.metric-val { font-size: 22px; font-weight: bold; font-family: monospace; }
+.metric-sub { font-size: 10px; color: #5a7a9a; margin-top: 3px; }
+.v-ok { color: #00ff9d; }
+.v-warn { color: #ffd700; }
+.v-alert { color: #ff4444; }
+.v-blue { color: #00d4ff; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.panel { background: #0f1628; border: 1px solid #1e3a5f; border-radius: 8px; padding: 14px; }
+.panel-title { font-size: 10px; color: #5a7a9a; font-family: monospace; letter-spacing: 2px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.panel-title span { color: #ffd700; font-size: 9px; }
+.unit-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.unit-card { background: #080c14; border-radius: 8px; padding: 10px 8px; text-align: center; border: 1px solid #1e3a5f; cursor: pointer; transition: border-color 0.2s; }
+.unit-card:hover { border-color: #00d4ff; }
+.unit-card.alert { border-color: #ff4444; background: #1a0808; }
+.unit-card.warn { border-color: #ffd700; background: #1a1400; }
+.unit-card.solar { border-color: #ff6b35; background: #1a0f08; }
+.unit-id { font-size: 9px; color: #5a7a9a; font-family: monospace; margin-bottom: 4px; }
+.unit-v { font-size: 14px; font-weight: bold; font-family: monospace; }
+.unit-p { font-size: 9px; color: #5a7a9a; margin-top: 2px; font-family: monospace; }
+.unit-badge { font-size: 8px; padding: 2px 5px; border-radius: 3px; margin-top: 4px; display: inline-block; }
+.badge-ok { background: #003a20; color: #00ff9d; }
+.badge-solar { background: #3a1500; color: #ff6b35; }
+.badge-ev { background: #001a3a; color: #00d4ff; }
+.badge-warn { background: #3a2800; color: #ffd700; }
+.alert-list { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+.alert-item { background: #080c14; border-radius: 6px; padding: 10px 12px; border-left: 3px solid #ff4444; font-size: 11px; }
+.alert-item.solar { border-left-color: #ff6b35; }
+.alert-item.ev { border-left-color: #00d4ff; }
+.alert-item.warn { border-left-color: #ffd700; }
+.alert-time { font-family: monospace; font-size: 9px; color: #5a7a9a; }
+.alert-msg { color: #c8d8e8; margin-top: 2px; }
+.alert-loc { font-family: monospace; font-size: 9px; color: #ffd700; margin-top: 2px; }
+.tlm-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e3a5f; font-size: 11px; }
+.tlm-row:last-child { border-bottom: none; }
+.tlm-key { color: #5a7a9a; font-family: monospace; font-size: 10px; }
+.tlm-val { font-family: monospace; font-weight: bold; }
+.footer-bar { background: #0f1628; border-top: 1px solid #1e3a5f; padding: 8px 20px; display: flex; justify-content: space-between; font-size: 10px; color: #5a7a9a; font-family: monospace; border-radius: 0 0 12px 12px; margin-top: 0; }
+.footer-brand { color: #ffd700; }
+</style>
+</head>
+<body>
+<div class="pe-wrap">
+<div class="pe-header">
+  <div class="pe-logo">
+    PowerEye
+    <span>Powered By Tinamics Co., Ltd.</span>
+  </div>
+  <div class="pe-status">
+    <div class="pe-dot"></div>
+    <span id="live-time">--:--:--</span>
+    &nbsp;|&nbsp; LoRa Gateway: ONLINE &nbsp;|&nbsp; MEA TLM: CONNECTED
+  </div>
+</div>
+<div class="pe-nav">
+  <div class="pe-tab active">OVERVIEW</div>
+  <div class="pe-tab">VOLTAGE</div>
+  <div class="pe-tab">POWER</div>
+  <div class="pe-tab">ALERTS</div>
+</div>
+<div class="pe-body">
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-label">AVG VOLTAGE</div>
+      <div class="metric-val v-ok" id="m-avg-v">--</div>
+      <div class="metric-sub">Target: 220–240V</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">TOTAL POWER</div>
+      <div class="metric-val v-blue" id="m-total-p">--</div>
+      <div class="metric-sub">All 10 units</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">REVERSE POWER</div>
+      <div class="metric-val v-alert" id="m-rev-p">--</div>
+      <div class="metric-sub">Solar suspect units</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">ACTIVE ALERTS</div>
+      <div class="metric-val v-warn" id="m-alerts">--</div>
+      <div class="metric-sub">Last 60 min</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">VOLTAGE TREND — ALL UNITS <span id="trend-time">--</span></div>
+      <div style="position:relative;height:160px;">
+        <canvas id="voltChart"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">POWER FLOW (kW) <span>+ consume / - inject</span></div>
+      <div style="position:relative;height:160px;">
+        <canvas id="powerChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-title">UNIT STATUS — 10 SITES <span id="unit-updated">--</span></div>
+    <div class="unit-grid" id="unit-grid"></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">ALERT LOG <span id="alert-count">0 events</span></div>
+      <div class="alert-list" id="alert-list"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">MEA TLM — TRANSFORMER <span>15 min interval</span></div>
+      <div id="tlm-data"></div>
+      <div style="margin-top:12px;">
+        <div class="panel-title">LOADING STATUS</div>
+        <div style="background:#080c14;border-radius:6px;height:14px;overflow:hidden;">
+          <div id="load-bar" style="height:100%;border-radius:6px;transition:width 1s;background:#00ff9d;width:0%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:#5a7a9a;font-family:monospace;">
+          <span>0%</span><span id="load-pct" style="color:#ffd700;">--</span><span>100%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="footer-bar">
+  <span>PowerEye Pilot Project | 10 Units | LoRa 868MHz | Solar Powered | MEA TLM</span>
+  <span class="footer-brand">Powered By Tinamics Co., Ltd.</span>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const UNITS = [
+  {id:'#01',name:'บ้านที่ 01',base:228,baseP:1.2},
+  {id:'#02',name:'บ้านที่ 02',base:235,baseP:0.8},
+  {id:'#03',name:'บ้านที่ 03',base:248,baseP:-1.8},
+  {id:'#04',name:'บ้านที่ 04',base:225,baseP:2.1},
+  {id:'#05',name:'บ้านที่ 05',base:231,baseP:0.5},
+  {id:'#06',name:'บ้านที่ 06',base:242,baseP:-2.4},
+  {id:'#07',name:'บ้านที่ 07',base:219,baseP:3.2},
+  {id:'#08',name:'บ้านที่ 08',base:236,baseP:1.1},
+  {id:'#09',name:'บ้านที่ 09',base:229,baseP:0.9},
+  {id:'#10',name:'บ้านที่ 10',base:244,baseP:-1.2},
+];
+const COLORS = ['#00d4ff','#00ff9d','#ffd700','#ff6b35','#c084fc','#ff4444','#5af0d0','#ffb347','#87ceeb','#98fb98'];
+let voltData = UNITS.map(() => Array.from({length:20}, () => 230));
+let powerData = UNITS.map(u => u.baseP);
+let alerts = [];
+let tick = 0;
+
+function rnd(min, max) { return +(Math.random()*(max-min)+min).toFixed(1); }
+function getState(v, p) {
+  if (p < -0.5) return 'solar';
+  if (v > 245) return 'warn';
+  if (v < 210) return 'alert';
+  return 'ok';
+}
+function getVClass(v) {
+  if (v > 245) return 'v-alert';
+  if (v < 210) return 'v-warn';
+  return 'v-ok';
+}
+function getBadge(s) {
+  if (s==='solar') return '<span class="unit-badge badge-solar">SOLAR</span>';
+  if (s==='alert') return '<span class="unit-badge badge-ev">EV</span>';
+  if (s==='warn')  return '<span class="unit-badge badge-warn">HIGH V</span>';
+  return '<span class="unit-badge badge-ok">OK</span>';
+}
+function pushAlert(type, unit, msg) {
+  const ts = new Date().toTimeString().slice(0,8);
+  alerts.unshift({type, unit, msg, ts});
+  if (alerts.length > 20) alerts.pop();
+}
+
+let voltChart, powerChart;
+
+function initCharts() {
+  const labels = Array.from({length:20},(_,i)=>i===19?'Now':`-${19-i}s`);
+  voltChart = new Chart(document.getElementById('voltChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: UNITS.slice(0,5).map((u,i)=>({
+        label: u.id, data: voltData[i].slice(),
+        borderColor: COLORS[i], borderWidth:1.5, pointRadius:0, tension:0.4
+      }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#5a7a9a',font:{size:9},maxTicksLimit:5},grid:{color:'#1e3a5f'}},
+        y:{ticks:{color:'#5a7a9a',font:{size:9}},grid:{color:'#1e3a5f'},min:200,max:260}
+      }
+    }
+  });
+  powerChart = new Chart(document.getElementById('powerChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: UNITS.map(u=>u.id),
+      datasets:[{
+        label:'kW', data: powerData.slice(),
+        backgroundColor: powerData.map(p=>p<0?'#ff6b35':'#00d4ff'), borderWidth:0
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#5a7a9a',font:{size:9}},grid:{color:'#1e3a5f'}},
+        y:{ticks:{color:'#5a7a9a',font:{size:9}},grid:{color:'#1e3a5f'}}
+      }
+    }
+  });
+}
+
+function renderUnits(vs, ps) {
+  document.getElementById('unit-grid').innerHTML = UNITS.map((u,i)=>{
+    const s = getState(vs[i], ps[i]);
+    return `<div class="unit-card ${s}">
+      <div class="unit-id">${u.id}</div>
+      <div class="unit-v ${getVClass(vs[i])}">${vs[i]}V</div>
+      <div class="unit-p">${ps[i]>0?'+':''}${ps[i]} kW</div>
+      ${getBadge(s)}
+    </div>`;
+  }).join('');
+}
+
+function renderAlerts() {
+  const el = document.getElementById('alert-list');
+  if (!alerts.length) { el.innerHTML='<div style="color:#5a7a9a;font-size:11px;text-align:center;padding:20px;font-family:monospace;">No alerts</div>'; return; }
+  el.innerHTML = alerts.slice(0,8).map(a=>`
+    <div class="alert-item ${a.type}">
+      <div class="alert-time">${a.ts}</div>
+      <div class="alert-msg">${a.msg}</div>
+      <div class="alert-loc">${a.unit}</div>
+    </div>`).join('');
+  document.getElementById('alert-count').textContent = alerts.length+' events';
+}
+
+function renderTLM(v,i,kw,kvar,pf,load) {
+  document.getElementById('tlm-data').innerHTML = `
+    <div class="tlm-row"><span class="tlm-key">VOLTAGE (V)</span><span class="tlm-val ${v>245?'v-alert':'v-ok'}">${v} V</span></div>
+    <div class="tlm-row"><span class="tlm-key">CURRENT (I)</span><span class="tlm-val v-blue">${i} A</span></div>
+    <div class="tlm-row"><span class="tlm-key">ACTIVE (kW)</span><span class="tlm-val v-ok">${kw} kW</span></div>
+    <div class="tlm-row"><span class="tlm-key">REACTIVE (kVAr)</span><span class="tlm-val v-warn">${kvar} kVAr</span></div>
+    <div class="tlm-row"><span class="tlm-key">POWER FACTOR</span><span class="tlm-val">${pf}</span></div>`;
+  const pct = Math.min(100, Math.round(load));
+  const bar = document.getElementById('load-bar');
+  bar.style.width = pct+'%';
+  bar.style.background = pct>80?'#ff4444':pct>60?'#ffd700':'#00ff9d';
+  document.getElementById('load-pct').textContent = pct+'%';
+}
+
+function update() {
+  tick++;
+  const now = new Date();
+  const ts = now.toTimeString().slice(0,8);
+  document.getElementById('live-time').textContent = ts;
+  document.getElementById('unit-updated').textContent = ts;
+  document.getElementById('trend-time').textContent = ts;
+
+  const vs = UNITS.map(u=>rnd(u.base-6,u.base+6));
+  const ps = UNITS.map(u=>rnd(u.baseP-0.3,u.baseP+0.3));
+
+  vs.forEach((v,i)=>{ voltData[i].push(v); if(voltData[i].length>20) voltData[i].shift(); });
+  powerData = ps;
+
+  const avgV = +(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(1);
+  const totalP = +(ps.filter(p=>p>0).reduce((a,b)=>a+b,0)).toFixed(1);
+  const revUnits = ps.filter(p=>p<0).length;
+
+  document.getElementById('m-avg-v').textContent = avgV+' V';
+  document.getElementById('m-avg-v').className = 'metric-val '+(avgV>245?'v-alert':avgV<210?'v-warn':'v-ok');
+  document.getElementById('m-total-p').textContent = totalP+' kW';
+  document.getElementById('m-rev-p').textContent = revUnits+' units';
+  document.getElementById('m-alerts').textContent = alerts.length;
+
+  vs.forEach((v,i)=>{
+    const s = getState(v,ps[i]);
+    if(s==='solar' && tick%8===i%8) pushAlert('solar',UNITS[i].id+' — '+UNITS[i].name,`⚡ Reverse Power ${ps[i].toFixed(1)} kW | V = ${v}V`);
+    else if(s==='alert' && tick%12===i%12) pushAlert('ev',UNITS[i].id+' — '+UNITS[i].name,`🚗 แรงดันตก ${v}V | สงสัย EV Inrush`);
+    else if(s==='warn' && tick%15===i%15) pushAlert('warn',UNITS[i].id+' — '+UNITS[i].name,`⚠️ แรงดันสูง ${v}V เกิน 245V`);
+  });
+
+  renderUnits(vs, ps);
+  renderAlerts();
+
+  voltChart.data.datasets.forEach((ds,i)=>{ ds.data=voltData[i].slice(); });
+  voltChart.update('none');
+  powerChart.data.datasets[0].data = powerData.slice();
+  powerChart.data.datasets[0].backgroundColor = powerData.map(p=>p<0?'#ff6b35':'#00d4ff');
+  powerChart.update('none');
+
+  renderTLM(rnd(229,236), rnd(28,42).toFixed(1), rnd(6.2,9.8).toFixed(1), rnd(1.2,3.4).toFixed(1), rnd(0.88,0.97).toFixed(2), rnd(38,72));
+}
+
+initCharts();
+update();
+setInterval(update, 2000);
+</script>
+</body>
+</html>
